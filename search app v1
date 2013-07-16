@@ -1,0 +1,166 @@
+<html>
+<head>
+    <title></title>
+    <script type = "text/javascript" src="js/jquery.js"></script>
+</head>
+<style>
+    #results{
+        width:220px;
+        padding:10px;
+        border:5px solid gray;
+        margin:auto;
+        float:left;
+    }
+    #section{
+        margin-left: 300px;
+        border: solid black 2px;
+        margin-top: -100px;
+        width: 400px;
+    }
+    #charts{
+    }
+</style>
+<script type = "text/javascript">
+
+    function dispCharts(ind_id)
+    {
+        chats = [];
+        $("#charts").html("");
+        $.get('../../../api/charts.json',function(charty){
+            $(charty.charts).each(function (index,data){
+                $.get(data.href+".json",function (schart){
+                    $(schart).each(function (i,d){
+                        $(d.indicators).each(function (i, cdata){
+                            if (ind_id == cdata.id)
+                            {
+
+                                chats.push(schart.id);
+                                image1 = new Image();
+                                image1.src = '../../../api/charts/'+schart.id+'/data';
+                                image1.width = 300;
+                                image1.height = 300;
+                                $("#charts").append(image1);
+                            }
+                        });
+                    });
+                }).done(function(){
+                            console.log(chats.length);
+
+                        });
+            });
+        });
+        $("#charts").append("<hr/>");
+    }
+
+    function dispMaps(ind_id)
+    {
+        chats = [];
+        $("#maps").html("");
+        $.get('../../../api/mapViews.json',function(mapy){
+            $(mapy.mapViews).each(function (index,data){
+                $.get(data.href+".json",function (smapy){
+                    $(smapy).each(function (i,d){
+                        $(d.indicator).each(function (i, cdata){
+                            if (ind_id == cdata.id)
+                            {
+
+                                chats.push(smapy.id);
+                                image1 = new Image();
+                                image1.src = '../../../api/mapViews/'+smapy.id+'/data';
+                                image1.width = 300;
+                                image1.height = 300;
+                                $("#maps").append(image1);
+                            }
+                        });
+                    });
+                }).done(function(){
+                            console.log(chats.length);
+
+                        });
+            });
+        });
+        $("#maps").append("<hr/>");
+    }
+
+    function dispReports(ind_id)
+    {
+        chats = [];
+        $("#reports").html("");
+        $.get('../../../api/reportTables.json',function(repy){
+            $(repy.reportTables).each(function (index,data){
+                $.get(data.href+".json",function (repy){
+                    $(repy).each(function (i,d){
+                        $(d.indicators).each(function (i, cdata){
+                            if (ind_id == cdata.id)
+                            {
+
+                                chats.push(repy.id);
+                                rframe = document.createElement("IFRAME");
+                                rframe.style.width = 500 +"px";
+                                rframe.style.height = 250 +"px";
+                                rframe.setAttribute("src",'../../../api/reportTables/'+repy.id+'/data'+'.html');
+                                /* image1.src = '../api/mapViews/'+repy.id+'/data'+html;
+                                 image1.width = 300;
+                                 image1.height = 300;*/
+                                $("#reports").append(rframe);
+                            }
+                        });
+                    });
+                }).done(function(){
+                            console.log(chats.length);
+
+                        });
+            });
+        });
+        $("#reports").append("<hr/>");
+    }
+
+
+    $(document).ready(function(){
+        $("#search").keyup(function(){
+            $("#charts").html("");
+            $("#results").html("");
+            $("#maps").html("");
+            $.get('../../../api/indicatorGroups/query/'+$(this).val()+'.json', function(json){
+                $(json.indicatorGroups).each(function(i, data){
+                    var anchor = $("<a></a>").attr("href",data.href).append(data.name);
+                    $("#results").append(anchor).append("<br/>");
+                    anchor.bind("click",function(e){
+                        $("#section").html("");
+                        e.preventDefault();
+                        $.get($(this).attr("href")+".json", function(json){
+                            $(json.indicators).each(function(i, d){
+                                var indics = $("<a></a>").attr("href","#").append(d.name);
+                                $("#section").append(indics).append("<br/>");
+                                indics.bind("click",function (evt){
+                                    evt.preventDefault();
+                                    dispCharts(d.id);
+                                    dispMaps(d.id);
+                                    dispReports(d.id);
+                                });
+                            });
+                        });
+                    });
+
+                });
+            });
+        });
+    });
+</script>
+
+<div>
+    <label for = "search">Search Indicator Group</label>
+    <input type = "text" id = "search"/>
+    <div id = "results">
+
+    </div>
+    <div id = "section">
+    </div>
+    <div id = "charts">
+    </div>
+    <div id = "maps">
+    </div>
+    <div id = "reports">
+    </div>
+</div>
+</html>
